@@ -1,5 +1,24 @@
 # rpi-hat
-Gather script utils for a RPi hat with LTE/5G connectivity
+Gather script utils for a RPi hat with LTE/5G connectivity.
+
+The used model is SIM8200EA-M2 5G HAT for Raspberry Pi, 5G/4G/3G Support, Snapdragon X55, Multi Mode Multi Band:
+
+[https://www.waveshare.com/wiki/SIM8200EA-M2_5G_HAT](https://www.waveshare.com/wiki/SIM8200EA-M2_5G_HAT)
+
+
+## Set up 4G, 5G NSA, 5G SA connection
+Depending on the connectivity desired, just trigger these commands:
+```bash
+# 4G connection
+./connect-4g.sh
+# 5G NSA connection
+connect-5g-nsa.sh
+# 5G SA connection
+connect-5g-sa.sh
+```
+these scripts will connect the `wireless_if` with the `APN` specified
+inside te script internal variables
+
 
 ## RPi hat monitoring 
 The `monitoring.sh` script gathers monitoring metrics of the RPi.
