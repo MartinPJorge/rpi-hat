@@ -18,6 +18,7 @@ echo -e 'AT+COPS=1,2,"21405",13\r' > $serial
 sudo qmicli -d /dev/cdc-wdm0\
     --device-open-net="net-raw-ip|net-no-qos-header"\
     --wds-start-network="apn='"$APN"',ip-type=4"\
+    --device-open-sync\
     --client-no-release-cid
 
 
