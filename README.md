@@ -60,3 +60,36 @@ a `.csv` file is stored under `$OUT` with the following data:
 | `cpui_hi` | % CPU time spent servicing/handling hardware interrupts |
 | `cpui_si` | % CPU time spent servicing/handling software interrupts |
 | `cpui_st` | steal time % CPU time in involuntary wait by virtual cpu while hypervisor is servicing another processor (or) % CPU time stolen from a virtual machine |
+
+
+
+## Requirements
+
+### NFS client
+Mount the NFS client to store data on a remote NFS server.
+
+Add the line below to the `/etc/fstab` to mount NFS on bootup.
+```bash
+# MOUNT the NFS to store data
+10.5.5.5:/var/nfsshare/nova-storage/datasets/5g-dive-integration   /mnt   nfs    auto  0  0
+```
+
+### Static route
+Add an static route to use ethernet connection (10.5.5.0)
+to send NFS data:
+```bash
+# @/etc/network/interfaces
+
+auto eth0
+	iface eth0 inet static
+#	address 192.168.0.1
+#	netmask 255.255.255.0
+	address 10.5.98.1
+	netmask 255.255.0.0
+	dns-nameservers 8.8.8.8
+	up ip r add 10.5.5.5 via 10.5.0.1 ## <- add this
+
+```
+
+
+

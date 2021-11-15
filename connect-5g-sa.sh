@@ -3,24 +3,42 @@
 
 serial="/dev/ttyUSB3"
 wireless_if="wwan0"
-APN='Internet'
+APN='5gsa02'
+
+
+# Ensure raw IP
+sudo ip link set dev wwan0 down
+echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
+sudo ip link set dev wwan0 up
 
 
 # issue AT commands 
-echo -e 'AT+CGDCONT=1,"IP",""\r' > $serial
-echo -e 'AT+CNBP=0x7FFFFFFFFFFFFFFF,0x00000000000000000000000000000000,0x000000000000003F,0x00000000003FFE63000601E2090808D7,0x00000000003FFE63000601E2090808D7\r' > $serial
+echo 'AT+CGDCONT=1,"IP","5gsa02"'
+echo -e 'AT+CGDCONT=1,"IP","5gsa02"\r' > $serial
+sleep 1
+echo 'AT+CNBP=0x7FFFFFFFFFFFFFFF,0x00000000000000000000000000000000,0x000000000000003F,0x00000000000040000000000000000000,0x00000000000040000000000000000000'
+echo -e 'AT+CNBP=0x7FFFFFFFFFFFFFFF,0x00000000000000000000000000000000,0x000000000000003F,0x00000000000040000000000000000000,0x00000000000040000000000000000000\r' > $serial
+sleep 1
+echo 'AT+CNMP=71'
 echo -e 'AT+CNMP=71\r' > $serial
+sleep 1
+echo 'AT+COPS=2'
 echo -e 'AT+COPS=2\r' > $serial
-echo -e 'AT+COPS=1,2,"21405",13\r' > $serial
+sleep 1
+echo 'AT+COPS=1,2,"240680",12'
+echo -e 'AT+COPS=1,2,"240680",12\r' > $serial
+echo "Waiting 10sec for the operator selection..."
+sleep 10
 
 
-
-# issue QMI client to start connection
+# issue QMI client to open connection
 sudo qmicli -d /dev/cdc-wdm0\
-        --device-open-net="net-raw-ip|net-no-qos-header"\
-        --wds-start-network="apn='"$APN"',ip-type=4"\
-        --client-no-release-cid\
-        --device-open-sync
+    --device-open-net="net-raw-ip|net-no-qos-header"\
+    --wds-start-network="apn='5gsa02',ip-type=4"\
+    --client-no-release-cid
+
+# Issue QMI client to start connection
+sudo qmi-network /dev/cdc-wdm0 start
 
 # obtain IP through DHCP
 sudo udhcpc -q -f -n -i $wireless_if
