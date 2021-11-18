@@ -91,5 +91,113 @@ auto eth0
 
 ```
 
+### USB meter UM34C power/voltage
+We collected electricity-related measurements from one of the
+RPis using an UM34C (see `Instruction_UM34C.pdf`).
+
+We use the following scenario
+```txt
+
+[RPi]
+  |
+[UM34C]  ))BT))  [RPi2]
+                 [rd-usb]
+```
+where an external RPi2 collects the bluetooth (BT) measurements
+of the UM34C using the `rd-usb` repo (contained as submodule here).
+
+### RPi2 bluetooth data collection
+This (link)[https://howchoo.com/pi/bluetooth-raspberry-pi]
+is useful to install the required libraries.
+
+First we do BT pairing:
+```bash
+hciconfig hci0 reset
+invoke-rc.d bluetooth restart
+hcitool scan
+  > Scanning ...
+  >     00:BA:57:57:CA:C4	UM34C
+  >     F8:34:41:A9:D9:9E	lora-desktop
+rfcomm bind 0 00:BA:57:57:CA:C4
+```
+this will create `/dev/rfcomm0`, from where `rd-usb`
+app will read the reported values.
+
+### Change DB storage location
+```python3
+# utils/config.py
+
+# data_path = user_data_dir("rd-usb", False)
+data_path = '/mnt/rd-usb'
+```
+where `mnt/rd-usb` points to a NFS mounted directory.
+
+### Run web app
+Then run the application under `rd-usb`:
+```bash
+sudo python3 web.py --on-receive-interval 5 --on-receive ../json-to-csv.sh
+```
+Then enter from the web browser to the webpage set up on port `5000`:
+ 1. go to `serial`
+ 2. specify `/dev/rfcomm0` in the form field 
+ 3. select the `UM34C` device up
+ 4. click on `connect`
+
+It will appear the web interface with the monitoring information.
+
+
+
+## PTP time synchronization
+We use a PTP syncronization to have a sync. timestamping
+in the measurements. One master, and different slaves.
+
+### PTP master
+We run the PTP master on Ubuntu 20.04.3 LTS.
+There we resort to a service to start the PTP master.
+
+Create a PTP service in `/etc/systemd/system/ptpd-5gdive.service`:
+```txt
+[Unit]
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/exec-ptpd-screen.sh
+
+[Install]
+WantedBy=default.target
+```
+now create the script invoked by the PTP service at `/usr/local/bin/exec-ptpd-screen.sh`:
+```txt
+#!/bin/bash
+
+ptpd -C -M -i ens3 -u 10.5.98.1 # add the list of slaves IPs
+```
+
+Next step is to give the files the proper privileges:
+```bash
+sudo chmod 744 /usr/local/bin/exec-ptpd-screen.sh
+sudo chmod 664 /etc/systemd/system/ptpd-5gdive.service
+```
+
+Now we enable our service:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable ptpd-5gdive.service
+```
+
+
+### PTP slave
+The PTP slaves are running on Raspbian GNU/Linux 10 (buster).
+
+These guys PTP clients are configured in bootup as follows in the `/etc/network/interfaces`:
+```txt
+auto eth0
+    ## SOME CONFIG
+	up screen -S ptpd -d -m sudo ptpd -C --slaveonly -i eth0 -u 10.5.4.30
+```
+
+That way, a screen session named `ptpd` is created on bootup to obtain
+synchronization
 
 
