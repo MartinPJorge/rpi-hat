@@ -4,6 +4,8 @@
 # NOTE: this script assumes time synchronization!!! between server and client
 #
 
+OFFSET=40 # additional seconds tcpdump waits for
+
 
 if [ $# -lt 5 ]; then
     echo "synced-iperf.sh server_ip tcp interval duration out outp if [bw]"
@@ -32,17 +34,20 @@ if [ $# -eq 8 ]; then
 fi
 
 
+
 ###################
 # TRIGGER TCPDUMP #
 ###################
-sudo tcpdump -i $if -w $outp &
+sudo tcpdump -G $(( duration + OFFSET )) -W 1 -i $if -w $outp &
+
+
 
 
 ##########
 # SERVER #
 ##########
 if [ $server_ip -eq 0 ]; then
-    iperf3 -s -i $interval -t $duration -J > $out
+    sudo iperf3 -s --one-off -J > $out
 fi
 
 
@@ -52,10 +57,10 @@ fi
 if [ $server_ip -eq 0 ]; then
     if [ $tcp -eq 1 ]; then
         # TCP server iperf
-        iperf3 -c -i $interval -t $duration -J > $out
+        sudo iperf3 -c -i $interval -t $duration -J > $out
     else
         # UDP server iperf
-        iperf3 -c -u -i $interval -t $duration -J -b $bw > $out
+        sudo iperf3 -c -u -i $interval -t $duration -J -b $bw > $out
     fi
 fi
 
@@ -63,4 +68,4 @@ fi
 ################
 # KILL TCPDUMP #
 ################
-sudo kill -9 `ps aux | grep "^tcpdump" | grep -oe "[0-9]\+" | head -n1`
+#sudo kill -9 `ps aux | grep "sudo tcpdump" | grep -oe "[0-9]\+" | head -n1`
