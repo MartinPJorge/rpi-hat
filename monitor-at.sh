@@ -161,12 +161,12 @@ while read line; do
             qmi_lte_ecio_rxchain0=`cat $QMI_TMP | grep ECIO |\
              grep -oe "[-0-9]\+[.0-9]* | head -n1"`
             qmi_lte_ecio_rxchain1=`cat $QMI_TMP | grep ECIO |\
-                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"
+                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"`
             # degrees
             qmi_lte_phase_rxchain0=`cat $QMI_TMP | grep Phase |\
              grep -oe "[-0-9]\+[.0-9]* | head -n1"`
             qmi_lte_phase_power_rxchain1=`cat $QMI_TMP | grep Phase |\
-                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"
+                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"`
         fi
 
 
