@@ -46,7 +46,7 @@ sudo tcpdump -G $(( duration + OFFSET )) -W 1 -i $if -w $outp &
 ##########
 # SERVER #
 ##########
-if [ $server_ip -eq 0 ]; then
+if [ "$server_ip" == "0" ]; then
     sudo iperf3 -s --one-off -J > $out
 fi
 
@@ -54,13 +54,13 @@ fi
 ##########
 # CLIENT #
 ##########
-if [ $server_ip -eq 0 ]; then
+if [ "$server_ip" != "0" ]; then
     if [ $tcp -eq 1 ]; then
         # TCP server iperf
-        sudo iperf3 -c -i $interval -t $duration -J > $out
+        sudo iperf3 -c $server_ip -i $interval -t $duration -J > $out
     else
         # UDP server iperf
-        sudo iperf3 -c -u -i $interval -t $duration -J -b $bw > $out
+        sudo iperf3 -c $server_ip -u -i $interval -t $duration -J -b $bw > $out
     fi
 fi
 
