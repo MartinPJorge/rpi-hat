@@ -1,11 +1,24 @@
 #!/bin/bash
 
 
+if [ $# -ne 1 ]; then
+    echo "at-monitor OUT"
+    exit 1
+fi
+
 serial="/dev/ttyUSB3"
 CPSI_FREQ=5
-OUT="/tmp/at-monitor.csv"
+OUT=$1
 QMI_TMP="/tmp/qmi-tmp.txt"
 COMMAND_INTER=0.01 # how much [s] wait between commands
+
+# Create the QMI file with all priviledge
+touch $QMI_TMP
+sudo chmod 666 $QMI_TMP
+# Create the OUT file with all priviledge
+touch $OUT
+sudo chmod 666 $OUT
+
 
 
 # First issue the periodic reporting
@@ -28,7 +41,7 @@ csv_header=$csv_header",qmi_nr_tunned_rxchain0,qmi_nr_tunned_rxchain1"
 csv_header=$csv_header",qmi_nr_power_rxchain0,qmi_nr_power_rxchain1"
 csv_header=$csv_header",qmi_nr_ecio_rxchain0,qmi_nr_ecio_rxchain1"
 csv_header=$csv_header",qmi_nr_phase_rxchain0,qmi_nr_phase_power_rxchain1"
-echo $csv_header > $OUT
+sudo echo $csv_header > $OUT
 
 
 
@@ -52,29 +65,8 @@ while read line; do
         csv_line=$csv_line,$voltage
 
 
-        $qmi_rssi
-        $qmi_rsrq
-        $qmi_rsrp
-        $qmi_snr
-        $qmi_lte_tunned_rxchain0
-        $qmi_lte_tunned_rxchain1
-        $qmi_lte_power_rxchain0
-        $qmi_lte_power_rxchain1
-        $qmi_lte_ecio_rxchain0
-        $qmi_lte_ecio_rxchain1
-        $qmi_lte_phase_rxchain0
-        $qmi_lte_phase_power_rxchain1
-        $qmi_nr_tunned_rxchain0
-        $qmi_nr_tunned_rxchain1
-        $qmi_nr_power_rxchain0
-        $qmi_nr_power_rxchain1
-        $qmi_nr_ecio_rxchain0
-        $qmi_nr_ecio_rxchain1
-        $qmi_nr_phase_rxchain0
-        $qmi_nr_phase_power_rxchain1
 
-
-        echo $csv_line >> $OUT
+        sudo echo $csv_line >> $OUT
 
 
 
@@ -201,8 +193,8 @@ while read line; do
             # Obtain QMI TX/RX measurements #
             #################################
             # TODO - check if is nr5g what should be below
-            sudo qmicli -d /dev/cdc-wdm0\
-                --nas-get-tx-rx-info=nr5g --device-open-sync > $QMI_TMP
+            echo $QMI_TMP
+            sudo qmicli -d /dev/cdc-wdm0 --nas-get-tx-rx-info=5gnr --device-open-sync > $QMI_TMP
             qmi_nr_tunned_rxchain0=`cat $QMI_TMP | grep tuned |\
                 grep -oe "'[a-zA-Z0-9]\+' | head -n1"`
             qmi_nr_tunned_rxchain1=`cat $QMI_TMP | grep tuned |\
@@ -216,12 +208,12 @@ while read line; do
             qmi_nr_ecio_rxchain0=`cat $QMI_TMP | grep ECIO |\
              grep -oe "[-0-9]\+[.0-9]* | head -n1"`
             qmi_nr_ecio_rxchain1=`cat $QMI_TMP | grep ECIO |\
-                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"
+                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"`
             # degrees
             qmi_nr_phase_rxchain0=`cat $QMI_TMP | grep Phase |\
              grep -oe "[-0-9]\+[.0-9]* | head -n1"`
             qmi_nr_phase_power_rxchain1=`cat $QMI_TMP | grep Phase |\
-                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"
+                grep -oe "[-0-9]\+[.0-9]* | head -n2 | tail -n1"`
         fi
             
         # TODO - other connectivity methods, e.g., 5G NSA

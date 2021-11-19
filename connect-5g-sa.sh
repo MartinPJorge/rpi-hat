@@ -42,5 +42,5 @@ sudo qmicli -d /dev/cdc-wdm0\
 sudo qmi-network /dev/cdc-wdm0 start
 
 # obtain IP through DHCP
-sudo udhcpc -q -f -i $wireless_if
+sudo udhcpc -q -f -n -i $wireless_if
 
