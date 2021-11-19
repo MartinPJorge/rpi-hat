@@ -60,7 +60,7 @@ if [ "$server_ip" != "0" ]; then
         sudo iperf3 -c $server_ip -i $interval -t $duration -J > $out
     else
         # UDP server iperf
-        sudo iperf3 -c $server_ip -u -i $interval -t $duration -J -b $bw > $out
+        sudo iperf3 -c $server_ip -u -i $interval -t $duration -J -b $bw"M" > $out
     fi
 fi
 
