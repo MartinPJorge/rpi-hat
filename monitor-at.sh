@@ -10,7 +10,7 @@ serial="/dev/ttyUSB3"
 CPSI_FREQ=5
 OUT=$1
 QMI_TMP="/tmp/qmi-tmp.txt"
-COMMAND_INTER=0.01 # how much [s] wait between commands
+COMMAND_INTER=1 # how much [s] wait between commands
 
 # Create the QMI file with all priviledge
 touch $QMI_TMP
@@ -48,6 +48,10 @@ sudo echo $csv_header > $OUT
 
 # Retrieve periodic data
 while read line; do
+    if [ -z $line ]; then
+        continue
+    fi
+
     echo LEO-$line
 
     ############################
@@ -146,8 +150,11 @@ while read line; do
             #################################
             # Obtain QMI TX/RX measurements #
             #################################
-            sudo qmicli -d /dev/cdc-wdm0\
-                -nas-get-tx-rx-info=lte --device-open-sync > $QMI_TMP
+            sudo rm $QMI_TMP
+            touch $QMI_TMP
+            sudo chmod 666 $QMI_TMP
+            # sudo qmicli -d /dev/cdc-wdm0\
+            #     -nas-get-tx-rx-info=lte --device-open-sync >> $QMI_TMP
             qmi_lte_tunned_rxchain0=`cat $QMI_TMP | grep tuned |\
                 grep -oe "'[a-zA-Z0-9]\+' | head -n1"`
             qmi_lte_tunned_rxchain1=`cat $QMI_TMP | grep tuned |\
@@ -193,8 +200,11 @@ while read line; do
             # Obtain QMI TX/RX measurements #
             #################################
             # TODO - check if is nr5g what should be below
-            echo $QMI_TMP
-            sudo qmicli -d /dev/cdc-wdm0 --nas-get-tx-rx-info=5gnr --device-open-sync > $QMI_TMP
+            sudo rm $QMI_TMP
+            touch $QMI_TMP
+            sudo chmod 666 $QMI_TMP
+            # TODO - DEPRECATED invoking qmicli breaks ongoing transmissions
+            # sudo qmicli -d /dev/cdc-wdm0 --nas-get-tx-rx-info=5gnr --device-open-sync >> $QMI_TMP
             qmi_nr_tunned_rxchain0=`cat $QMI_TMP | grep tuned |\
                 grep -oe "'[a-zA-Z0-9]\+' | head -n1"`
             qmi_nr_tunned_rxchain1=`cat $QMI_TMP | grep tuned |\
@@ -223,8 +233,10 @@ while read line; do
         ##################################
         # Obtain QMI signal measurements #
         ##################################
-        sudo qmicli -d /dev/cdc-wdm0\
-            --nas-get-signal-info --device-open-sync > $QMI_TMP
+        # TODO - DEPRECATED invoking qmicli breaks ongoing transmissions
+        # sudo qmicli -d /dev/cdc-wdm0\
+        #     --nas-get-signal-info --device-open-sync >> $QMI_TMP
+
         # dBm
         qmi_rssi=`cat $QMI_TMP | grep "RSSI" | grep -oe "[-0-9]\+[.0-9]*"` 
         # dB
