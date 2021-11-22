@@ -48,10 +48,6 @@ sudo echo $csv_header > $OUT
 
 # Retrieve periodic data
 while read line; do
-    if [ -z $line ]; then
-        continue
-    fi
-
     echo LEO-$line
 
     ############################

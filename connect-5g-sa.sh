@@ -4,7 +4,8 @@
 serial="/dev/ttyUSB3"
 wireless_if="wwan0"
 APN='5gsa02'
-OP_WAIT=60 # time to wait operator selection sync
+OP_WAIT=20 # time to wait operator selection sync
+iperf_server="10.5.4.25"
 
 
 # Ensure raw IP
@@ -43,4 +44,8 @@ sudo qmi-network /dev/cdc-wdm0 start
 
 # obtain IP through DHCP
 sudo udhcpc -q -f -n -i $wireless_if
+
+# Create route towards iperf server
+fiveg_gw=`ip r s | grep "via 10.19" | grep -o "[0-9\.]\+" | head -n1`
+sudo ip r add $iperf_server via $fiveg_gw
 
