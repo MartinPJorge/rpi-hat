@@ -1,4 +1,7 @@
 # rpi-hat
+![Schema of hardware in 5G dive network measurements](img/5gdive-net-setup.png)
+
+
 Gather script utils for a RPi hat with LTE/5G connectivity.
 
 The used model is SIM8200EA-M2 5G HAT for Raspberry Pi, 5G/4G/3G Support, Snapdragon X55, Multi Mode Multi Band:
